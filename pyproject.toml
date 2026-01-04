@@ -1,0 +1,35 @@
+[project]
+name = "flow-matching"
+version = "0.1.0"
+description = "Flow Matching for Generative Modeling - Project 3"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "tqdm>=4.65.0",
+    "tensorboard>=2.13.0",
+    "pillow>=9.5.0",
+    "scipy>=1.10.0",
+    "pyyaml>=6.0",
+    "torchdiffeq>=0.2.3",
+    "pytorch-fid>=0.3.0",
+    "einops>=0.6.0",
+    "click>=8.1.0",
+    "wandb>=0.15.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.3.0",
+    "jupyter>=1.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
