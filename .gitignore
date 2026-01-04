@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Project Specific - Data & Results
+# Large datasets
+Flow_Matching/src/data/
+data/
+
+# Training results and logs
+Flow_Matching/results/
+results/
+
+# Model checkpoints (Large files)
+*.pth
+*.pt
+*.ckpt
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Agent / Temporary
+.gemini/
