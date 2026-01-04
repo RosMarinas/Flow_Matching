@@ -132,8 +132,10 @@ def sample(
     num_samples: int,
     input_shape: Tuple[int, ...] = (2,),
     num_steps: int = 100,
-    method: Literal["euler", "rk4"] = "euler",
+    method: Literal["euler", "rk4", "dopri5"] = "euler",
     device: str = "cpu",
+    atol: float = 1e-5,
+    rtol: float = 1e-5,
 ) -> torch.Tensor:
     """
     Generate samples from trained model.
@@ -147,9 +149,11 @@ def sample(
         model: Trained vector field network
         num_samples: Number of samples to generate
         input_shape: Shape of a single sample (e.g., (2,) or (3, 32, 32))
-        num_steps: Number of integration steps
-        method: Integration method ('euler' or 'rk4')
+        num_steps: Number of integration steps (for fixed-step methods)
+        method: Integration method ('euler', 'rk4', 'dopri5')
         device: torch device
+        atol: Absolute tolerance (for adaptive methods)
+        rtol: Relative tolerance (for adaptive methods)
 
     Returns:
         samples: Generated samples
@@ -162,6 +166,26 @@ def sample(
         samples = euler_solver(model, x0, num_steps=num_steps, return_trajectory=False)
     elif method == "rk4":
         samples = rk4_solver(model, x0, num_steps=num_steps, return_trajectory=False)
+    elif method == "dopri5":
+        # Use adaptive solver
+        try:
+            from torchdiffeq import odeint
+        except ImportError:
+            raise ImportError(
+                "torchdiffeq is required for dopri5. "
+                "Install it with: uv add torchdiffeq"
+            )
+
+        def ode_func(t, x):
+            t_tensor = torch.ones(x.shape[0], device=x.device) * t
+            if len(x.shape) == 4:
+                t_tensor = t_tensor.view(-1, 1, 1, 1)
+            elif len(x.shape) == 2:
+                t_tensor = t_tensor.view(-1, 1)
+            return model(x, t_tensor)
+
+        t = torch.tensor([0.0, 1.0], device=device)
+        samples = odeint(ode_func, x0, t, method="dopri5", atol=atol, rtol=rtol)[-1]
     else:
         raise ValueError(f"Unknown method: {method}")
 

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Flow Matching for Generative Modeling - Project 3"
 readme = "README.md"
 requires-python = ">=3.10"
+
 dependencies = [
     "torch>=2.0.0",
     "torchvision>=0.15.0",
@@ -30,6 +31,16 @@ dev = [
     "flake8>=6.0.0",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+
+# 1. 定义 PyTorch 的官方 CUDA 仓库 (这里以 CUDA 12.1 为例)
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+# 2. 强制指定 torch 相关库去上面定义的仓库下载
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+# 如果你用了 torchaudio，也要加上：
+# torchaudio = { index = "pytorch-cu128" }

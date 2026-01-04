@@ -12,7 +12,7 @@
 
 This is a Flow Matching implementation for a graduate machine learning course (Project 3). The project implements the paper "Flow Matching for Generative Modeling" (ICLR 2023), focusing on reproducing key experiments on 2D toy data and CIFAR-10.
 
-**Current Status**: Phase 2 complete. **All probability paths (OT, VP, VE) in `src/paths.py` have been mathematically fixed and numerically verified using double precision.** The model now correctly learns the velocity vector field for both straight (OT) and curved (VP/VE) trajectories.
+**Current Status**: Phase 3 complete. **CIFAR-10 training infrastructure is ready.** Implemented U-Net architecture, data loader, and training script (`src/train_cifar.py`). Verified correct execution on CUDA device.
 
 ## Environment Management
 
@@ -79,26 +79,27 @@ The codebase follows a **flat structure** (max 2 levels deep) in `src/`:
    - Supports hyperparameter configuration via CLI args
    - Generates visualizations automatically
 
-### What's Implemented (Phase 1-2: ✅ Complete)
+### What's Implemented (Phase 1-3: ✅ Complete)
 
 - CFM core algorithm with OT/VP/VE paths (Mathematically Verified)
 - MLP vector field network for 2D data
 - 2D toy data generator (checkerboard)
 - ODE solvers (Euler, RK4)
-- Training script with visualization
+- Training script with visualization for 2D data
 - Vector field and trajectory plotting
+- **U-Net architecture for CIFAR-10**
+- **CIFAR-10 data loader**
+- **CIFAR-10 training script (`src/train_cifar.py`)**
 
-### What's NOT Yet Implemented (Phase 3-7: ⏳ Pending)
+### What's NOT Yet Implemented (Phase 4-7: ⏳ Pending)
 
-- U-Net architecture for CIFAR-10
-- CIFAR-10 data loader
-- CIFAR-10 training script (`src/train_cifar.py`)
+- CIFAR-10 Full Training (Phase 4)
 - FID/NLL evaluation metrics
 - NFE sweep/ablation study
 
 ## Running Experiments
 
-### 2D Toy Data (Phase 2 -Working)
+### 2D Toy Data (Phase 2 - Working)
 
 ```bash
 # Train OT path model
@@ -208,7 +209,7 @@ plot_trajectories(model, euler_solver, n_samples=20, num_steps=100)
 
 - ✅ **Phase 1**: Environment & Core Algorithm (Complete)
 - ✅ **Phase 2**: 2D Toy Experiments (Complete - Fixed & Verified)
-- ⏳ **Phase 3**: CIFAR-10 U-Net Architecture (Pending)
+- ✅ **Phase 3**: CIFAR-10 U-Net Architecture (Complete - Verified)
 - ⏳ **Phase 4**: CIFAR-10 Full Training (Pending)
 - ⏳ **Phase 5**: NFE Efficiency Analysis (Pending)
 - ⏳ **Phase 6**: Report Figures (Pending)

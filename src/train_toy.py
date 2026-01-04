@@ -36,7 +36,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train Flow Matching on 2D toy data")
     parser.add_argument("--path", type=str, default="OT", choices=["OT", "VP"])
     parser.add_argument("--hidden_dim", type=int, default=512)
-    parser.add_argument("--num_layers", type=int, default=5)
+    parser.add_argument("--num_layers", type=int, default=8)
     parser.add_argument("--epochs", type=int, default=100, help="Increased default epochs")
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
@@ -45,7 +45,7 @@ def parse_args():
     parser.add_argument("--log_interval", type=int, default=5)
     parser.add_argument("--save_interval", type=int, default=20)
     parser.add_argument("--output_dir", type=str, default="results/toy/checkpoints")
-    parser.add_argument("--device", type=str, default="cpu")
+    parser.add_argument("--device", type=str, default="cuda")
     return parser.parse_args()
 
 

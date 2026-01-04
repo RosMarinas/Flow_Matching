@@ -15,7 +15,7 @@
 - [x] Phase 0: 项目初始化
 - [x] Phase 1: 环境搭建与核心算法 ✅ **完成** (2026-01-04)
 - [x] Phase 2: 2D 玩具数据实验 ✅ **完成** (2026-01-04)
-- [ ] Phase 3: CIFAR-10 U-Net 架构 (2-3 天)
+- [x] Phase 3: CIFAR-10 U-Net 架构 ✅ **完成** (2026-01-04)
 - [ ] Phase 4: CIFAR-10 完整训练 (5-7 天)
 - [ ] Phase 5: NFE 效率分析 (2-3 天)
 - [ ] Phase 6: 报告撰写 (2-3 天)
@@ -85,19 +85,20 @@ Flow_Matching/
 3. **`results/`** - 实验结果（checkpoints + figures）
 4. **`report/`** - 报告材料
 
-### ✅ 已完成（Phase 1-2）
+### ✅ 已完成（Phase 1-3）
 - `src/cfm.py` - CFM 核心算法（已修复 VP/VE 路径逻辑，经数值验证正确）
 - `src/paths.py` - OT/VP/VE 路径（已通过数值微分验证，确保目标向量场为路径的真实时间导数）
-- `src/solver.py` - ODE 求解器
+- `src/solver.py` - ODE 求解器（Euler, RK4, dopri5）
 - `src/models.py` - MLP（2D 网络）
 - `src/data.py` - 2D 数据集
 - `src/visualize.py` - 可视化工具
 - `src/train_toy.py` - 2D 训练脚本（使用 `uv run` 执行）
-
-### ⏳ 待实现（Phase 3-6）
 - `src/models.py` - U-Net（CIFAR-10 网络）
+- `src/data.py` - CIFAR-10 数据加载
+- `src/train_cifar.py` - CIFAR-10 训练脚本（验证通过）
+
+### ⏳ 待实现（Phase 4-6）
 - `src/metrics.py` - FID/NLL 计算
-- `src/train_cifar.py` - CIFAR-10 训练
 - `src/evaluate_cifar.py` - 评估脚本
 - `src/nfe_sweep.py` - NFE 效率分析
 
@@ -115,7 +116,7 @@ Flow_Matching/
 | `src/visualize.py` | 🔴 最高 | ✅ | 可视化工具 |
 | `src/train_toy.py` | 🔴 最高 | ✅ | 2D 训练 |
 | `src/compare.py` | 🔴 最高 | ✅ | OT vs VP 对比训练 |
-| `src/train_cifar.py` | 🟡 中 | ⏳ | CIFAR-10 训练 |
+| `src/train_cifar.py` | 🟡 中 | ✅ | CIFAR-10 训练 |
 | `src/metrics.py` | 🟡 中 | ⏳ | FID/NLL |
 | `src/nfe_sweep.py` | 🟢 低 | ⏳ | NFE 分析 |
 
@@ -230,25 +231,25 @@ Flow_Matching/
 
 ---
 
-## Phase 3: CIFAR-10 U-Net 架构 (本地开发, 2-3 天)
+## Phase 3: CIFAR-10 U-Net 架构 (本地开发, 2-3 天) ✅ **已完成** (2026-01-04)
 
 ### 任务清单
-- [ ] **实现 U-Net** (`src/models/unet.py`)
+- [x] **实现 U-Net** (`src/models/unet.py`)
   - 基于 Dhariwal & Nichol (2021)
   - 配置: channels=256, depth=2, attention_res=[16]
   - GroupNorm + SiLU activation
   - Time embedding (sinusoidal)
 
-- [ ] 实现 CIFAR-10 数据加载 (`src/data/datasets.py`)
+- [x] 实现 CIFAR-10 数据加载 (`src/data/datasets.py`)
   - 标准化到 [-1, 1]
   - Data augmentation（可选）
 
-- [ ] 实现 ODE Solver (`src/flow_matching/solver.py`)
+- [x] 实现 ODE Solver (`src/flow_matching/solver.py`)
   - Euler method（快速采样）
   - RK4（中等质量）
   - dopri5（高质量，自适应步长）
 
-- [ ] 本地小规模测试
+- [x] 本地小规模测试
   - 训练 100 iterations 验证代码
   - 生成样本检查输出形状
 

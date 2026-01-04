@@ -58,15 +58,19 @@ def plot_vector_field(
     xy_flat = torch.tensor(
         np.stack([X.flatten(), Y.flatten()], axis=1), dtype=torch.float32
     )
+    
+    # Get device from model
+    device = next(model.parameters()).device
+    xy_flat = xy_flat.to(device)
 
     for ax, t in zip(axes, t_values):
         # Create time tensor
-        t_tensor = torch.ones(xy_flat.shape[0], 1) * t
+        t_tensor = torch.ones((xy_flat.shape[0], 1), device=device) * t
 
         # Predict vector field
         model.eval()
         with torch.no_grad():
-            v = model(xy_flat, t_tensor).cpu().numpy()
+            v = model(xy_flat, t_tensor).detach().cpu().numpy()
 
         # Reshape to grid
         U = v[:, 0].reshape(X.shape)
@@ -138,8 +142,11 @@ def plot_trajectories(
     torch.manual_seed(seed)
     np.random.seed(seed)
 
+    # Get device from model
+    device = next(model.parameters()).device
+
     # Sample initial noise
-    x0 = torch.randn(n_samples, 2)
+    x0 = torch.randn(n_samples, 2, device=device)
 
     # Integrate ODE and record trajectory (no grad needed for visualization)
     with torch.no_grad():
@@ -152,7 +159,7 @@ def plot_trajectories(
     colors = plt.cm.tab10(np.linspace(0, 1, n_samples))
 
     for i in range(n_samples):
-        traj = trajectory[:, i, :].cpu().numpy()  # (num_steps+1, 2)
+        traj = trajectory[:, i, :].detach().cpu().numpy()  # (num_steps+1, 2)
 
         # Plot trajectory with color gradient
         points = np.array([traj[:-1], traj[1:]]).transpose(1, 0, 2)
@@ -222,11 +229,14 @@ def compare_paths(
     from solver import euler_solver
     from data import generate_checkerboard
 
+    # Get device from model
+    device = next(model_ot.parameters()).device
+
     # Generate background checkerboard data for reference
-    background_data = generate_checkerboard(n_samples=5000, grid_size=4, device='cpu')
+    background_data = generate_checkerboard(n_samples=5000, grid_size=4, device=device)
 
     # Sample initial noise
-    x0 = torch.randn(n_samples, 2)
+    x0 = torch.randn(n_samples, 2, device=device)
 
     # Integrate both models (no grad needed for visualization)
     with torch.no_grad():
@@ -241,13 +251,13 @@ def compare_paths(
     # OT trajectories
     # Plot background data first
     axes[0].scatter(
-        background_data[:, 0].cpu().numpy(),
-        background_data[:, 1].cpu().numpy(),
+        background_data[:, 0].detach().cpu().numpy(),
+        background_data[:, 1].detach().cpu().numpy(),
         s=1, c='gray', alpha=0.2, label='Target distribution'
     )
 
     for i in range(n_samples):
-        traj = traj_ot[:, i, :].cpu().numpy()
+        traj = traj_ot[:, i, :].detach().cpu().numpy()
         axes[0].plot(traj[:, 0], traj[:, 1], color=colors[i], alpha=0.6, linewidth=2)
         axes[0].scatter(traj[0, 0], traj[0, 1], color=colors[i], marker="o", s=50)
         axes[0].scatter(traj[-1, 0], traj[-1, 1], color=colors[i], marker="*", s=100)
@@ -264,13 +274,13 @@ def compare_paths(
     # VP trajectories
     # Plot background data first
     axes[1].scatter(
-        background_data[:, 0].cpu().numpy(),
-        background_data[:, 1].cpu().numpy(),
+        background_data[:, 0].detach().cpu().numpy(),
+        background_data[:, 1].detach().cpu().numpy(),
         s=1, c='gray', alpha=0.2, label='Target distribution'
     )
 
     for i in range(n_samples):
-        traj = traj_vp[:, i, :].cpu().numpy()
+        traj = traj_vp[:, i, :].detach().cpu().numpy()
         axes[1].plot(traj[:, 0], traj[:, 1], color=colors[i], alpha=0.6, linewidth=2)
         axes[1].scatter(traj[0, 0], traj[0, 1], color=colors[i], marker="o", s=50)
         axes[1].scatter(traj[-1, 0], traj[-1, 1], color=colors[i], marker="*", s=100)
@@ -321,8 +331,11 @@ def plot_density_evolution(
     Returns:
         fig: matplotlib Figure object
     """
+    # Get device from model
+    device = next(model.parameters()).device
+
     # Sample initial noise
-    x0 = torch.randn(n_samples, 2)
+    x0 = torch.randn(n_samples, 2, device=device)
 
     # Integrate full trajectory (no grad needed for visualization)
     with torch.no_grad():
@@ -335,7 +348,7 @@ def plot_density_evolution(
         axes = [axes]
 
     for ax, t_idx in zip(axes, time_points):
-        samples = trajectory[t_idx].cpu().numpy()
+        samples = trajectory[t_idx].detach().cpu().numpy()
 
         # 2D histogram
         h = ax.hist2d(
@@ -401,6 +414,38 @@ def plot_training_curves(
         print(f"✅ Training curves saved to {save_path}")
 
     return fig
+
+
+def save_samples(
+    samples: torch.Tensor,
+    save_path: str,
+    nrow: int = 8,
+    normalize: bool = True,
+    value_range: Tuple[float, float] = (-1, 1),
+):
+    """
+    Save a batch of samples as a grid image.
+
+    Args:
+        samples: Tensor of shape (B, C, H, W)
+        save_path: Path to save the image
+        nrow: Number of images per row
+        normalize: Whether to shift the image to the range (0, 1)
+        value_range: Range of the input image
+    """
+    from torchvision.utils import save_image
+
+    # Create directory if it doesn't exist
+    Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+
+    save_image(
+        samples,
+        save_path,
+        nrow=nrow,
+        normalize=normalize,
+        value_range=value_range,
+    )
+    print(f"✅ Samples saved to {save_path}")
 
 
 def create_report_figures(
