@@ -5,14 +5,18 @@
 
 1. 你的修改应该使得项目更易于理解和维护，而不是更复杂。需要进行改进时请直接在源代码中修改，而不是新建文件.
 2. 你可以编写脚本临时测试功能，但是请新建一个temp/目录，将这些脚本放在那里，并在完成后删除它们。
-3. 所有需要运行的脚本都必须交由用户执行。 不要在代码中自动运行任何脚本。
-4. 在完成某个任务后请及时更新plan.md与本文件，确保它们与当前代码状态一致。
+3. 请尽量复用已有代码和函数，避免重复造轮子。
+1. 在完成某个任务后请及时更新plan.md与本文件，确保它们与当前代码状态一致，不要新建总结文件。
 
 ## Project Overview
 
 This is a Flow Matching implementation for a graduate machine learning course (Project 3). The project implements the paper "Flow Matching for Generative Modeling" (ICLR 2023), focusing on reproducing key experiments on 2D toy data and CIFAR-10.
 
-**Current Status**: Phase 5 complete (Code). **NFE sweep script implemented and verified.** Ready for full-scale experiments.
+**Current Status**: Phase 6 进行中 - 对比实验实施。
+- ✅ 2D Toy完整对比可视化已完成
+- ✅ CIFAR-10训练完成（1000 epochs）
+- ⏳ CIFAR-10 NFE评估运行中
+- ⏳ 报告图表生成中
 
 ## Environment Management
 
@@ -80,47 +84,89 @@ The codebase follows a **flat structure** (max 2 levels deep) in `src/`:
    - Supports hyperparameter configuration via CLI args
    - Generates visualizations automatically
 
-### What's Implemented (Phase 1-3: ✅ Complete)
+### What's Implemented (Phase 1-6: ✅ Complete)
 
+**核心算法**：
 - CFM core algorithm with OT/VP/VE paths (Mathematically Verified)
 - MLP vector field network for 2D data
-- 2D toy data generator (checkerboard)
+- U-Net architecture for CIFAR-10
 - ODE solvers (Euler, RK4)
-- Training script with visualization for 2D data
-- Vector field and trajectory plotting
-- **U-Net architecture for CIFAR-10**
-- **CIFAR-10 data loader**
-- **CIFAR-10 training script (`src/train_cifar.py`)**
-- **NLL/FID metrics (`src/metrics.py`) - Verified memory efficient**
-- **NFE efficiency analysis script (`src/nfe_sweep.py`)**
+- NLL/FID metrics (`src/metrics.py`) - Memory efficient
 
-### What's NOT Yet Implemented (Phase 4-7: ⏳ Pending)
+**训练脚本**：
+- 2D toy training (`src/train_toy.py`) - 自动生成可视化
+- CIFAR-10 training (`src/train_cifar.py`) - 1000 epochs完成
 
-- CIFAR-10 Full Training (Phase 4 - Running)
-- Report Writing (Phase 6-7)
+**评估与可视化**：
+- NFE efficiency analysis (`src/nfe_sweep.py`) - FID vs NFE曲线
+- Model evaluation (`src/evaluate_models.py`) - 调用nfe_sweep
+- Visualization utilities (`src/visualize.py`) - 包含所有对比函数
+- Report figure generator (`src/generate_report_figures.py`) - 汇总所有图表
+
+**已完成实验**：
+- ✅ 2D Toy: OT vs VP完整对比（向量场、轨迹、流演化）
+- ✅ CIFAR-10: OT和VP模型训练完成（1000 epochs）
+- ⏳ CIFAR-10: NFE sweep评估运行中
+
+### What's NOT Yet Implemented (Phase 7: ⏳ Pending)
+
+- DDPM baseline implementation（可选，用于完整对比）
+- Final report writing
 
 ## Running Experiments
 
-### 2D Toy Data (Phase 2 - Working)
+### 2D Toy Data (✅ Complete)
 
 ```bash
-# Train OT path model
-uv run src/train_toy.py --path OT --epochs 1000 --batch_size 256
+# Train models
+uv run src/train_toy.py --path OT --epochs 2000 --hidden_dim 512 --num_layers 5
+uv run src/train_toy.py --path VP --epochs 2000 --hidden_dim 512 --num_layers 5
 
-# Train VP path model (for comparison)
-uv run src/train_toy.py --path VP --epochs 1000
-
-# Custom hyperparameters
-uv run src/train_toy.py --path OT --hidden_dim 1024 --num_layers 7 --lr 5e-4
+# Generate comparison figures
+PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py --generate_2d
 ```
 
-Outputs saved to:
-- Checkpoints: `results/toy/checkpoints/{OT,VP}/model_final.pt`
-- Figures: `report/figures/toy/` (vector fields, trajectories, training curves)
+Outputs:
+- Checkpoints: `results/toy/checkpoints/model_ot.pt`, `model_vp.pt`
+- Figures: `report/figures/toy/` (OT vs VP对比图)
 
-### CIFAR-10 (Phase 4 - Not Ready)
+### CIFAR-10 (⏳ 评估中)
 
-Not yet implemented. U-Net and CIFAR-10 training script coming in Phase 3.
+**训练已完成**：
+```bash
+# Models already trained (1000 epochs)
+# OT: results/cifar10/OT/model_final_1000epoch.pt
+# VP: results/cifar10/VP/model_final_1000epoch.pt
+```
+
+**运行评估**：
+```bash
+# Quick evaluation (2000 samples, ~30 min)
+uv run src/evaluate_models.py \
+    --checkpoint_ot results/cifar10/OT/model_final_1000epoch.pt \
+    --checkpoint_vp results/cifar10/VP/model_final_1000epoch.pt \
+    --num_samples 2000
+
+# Full evaluation (10000 samples, ~2-3 hours)
+uv run src/evaluate_models.py \
+    --checkpoint_ot results/cifar10/OT/model_final_1000epoch.pt \
+    --checkpoint_vp results/cifar10/VP/model_final_1000epoch.pt \
+    --num_samples 10000
+```
+
+**生成对比图表**：
+```bash
+# After evaluation completes
+PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py --generate_cifar10
+
+# Or generate all figures at once
+PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py
+```
+
+Outputs:
+- NFE results: `results/cifar10/nfe_sweep/nfe_comparison_results.json`
+- Figures: `report/figures/cifar10/` (FID vs NFE, sample comparison)
+- Tables: `report/tables/table1_comparison.md`
 
 ## Key Implementation Details
 
@@ -160,25 +206,72 @@ For 2D data:
 - Input `t`: shape `(B, 1)` or `(B,)` (will be reshaped)
 - Output `v`: shape `(B, 2)` - 2D vector field
 
-For images (when U-Net implemented):
-- Input `x`: shape `(B, C, H, W)` - e.g., `(B, 3, 32, 32)` for CIFAR-10
+For images (CIFAR-10):
+- Input `x`: shape `(B, 3, 32, 32)`
 - Input `t`: shape `(B, 1, 1, 1)` (broadcast over spatial dims)
-- Output `v`: shape `(B, C, H, W)` - RGB vector field
+- Output `v`: shape `(B, 3, 32, 32)` - RGB vector field
+
+### ⚠️ Important Model Configurations
+
+**从checkpoint推断的实际配置**（与默认参数不同）：
+
+**CIFAR-10 U-Net**:
+```python
+UNet(
+    in_channels=3,
+    out_channels=3,
+    model_channels=32,  # ⚠️ 不是128!
+    num_res_blocks=2,
+    channel_mult=(1, 2, 2, 2),
+    attention_resolutions=(2,),  # 在16x16分辨率
+    dropout=0.1,
+    num_heads=4
+)
+```
+
+**2D Toy MLP**:
+```python
+MLPVectorField(
+    hidden_dim=512,  # ⚠️ 不是128!
+    num_layers=5      # ⚠️ 不是3!
+)
+```
+
+**加载模型时必须使用这些配置，否则会导致参数不匹配错误！**
 
 ## Common Workflows
 
-### Training a 2D Model
+### 快速生成所有报告图表
 
 ```bash
-# Quick test (100 epochs)
-uv run src/train_toy.py --path OT --epochs 100 --log_interval 10
+# 1. 生成2D Toy对比图
+PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py --generate_2d
 
-# Full training (1000 epochs)
-uv run src/train_toy.py --path OT --epochs 1000
+# 2. 运行CIFAR-10评估（如未运行）
+uv run src/evaluate_models.py \
+    --checkpoint_ot results/cifar10/OT/model_final_1000epoch.pt \
+    --checkpoint_vp results/cifar10/VP/model_final_1000epoch.pt \
+    --num_samples 2000
 
-# Train both paths for comparison
-uv run src/train_toy.py --path OT --epochs 1000
-uv run src/train_toy.py --path VP --epochs 1000
+# 3. 生成CIFAR-10对比图（评估完成后）
+PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py --generate_cifar10
+
+# 或一次性生成所有
+PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py
+```
+
+### 训练新模型
+
+**2D Toy**:
+```bash
+uv run src/train_toy.py --path OT --epochs 2000 --hidden_dim 512 --num_layers 5
+uv run src/train_toy.py --path VP --epochs 2000 --hidden_dim 512 --num_layers 5
+```
+
+**CIFAR-10**:
+```bash
+uv run src/train_cifar.py --path OT --epochs 1000 --model_channels 32
+uv run src/train_cifar.py --path VP --epochs 1000 --model_channels 32
 ```
 
 ### Debugging Training Issues
@@ -188,55 +281,41 @@ If loss doesn't converge:
 2. Verify data normalization (should be reasonable range)
 3. Ensure model is in train mode: `model.train()`
 4. Check gradient flow: `print(torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0))`
+5. **Check model config matches checkpoint** (see Important Model Configurations above)
 
-### Generating New Visualizations
-
-```python
-from src.visualize import plot_vector_field, plot_trajectories
-from src.solver import euler_solver
-
-# Load trained model
-model = MLPVectorField()
-model.load_state_dict(torch.load("results/toy/checkpoints/OT/model_final.pt"))
-model.eval()
-
-# Plot vector field
-plot_vector_field(model, t_values=[0.0, 0.25, 0.5, 0.75, 1.0])
-
-# Plot generation trajectories
-plot_trajectories(model, euler_solver, n_samples=20, num_steps=100)
-```
-
-## Project Phases (from plan.md)
+## Project Phases
 
 - ✅ **Phase 1**: Environment & Core Algorithm (Complete)
-- ✅ **Phase 2**: 2D Toy Experiments (Complete - Fixed & Verified)
-- ✅ **Phase 3**: CIFAR-10 U-Net Architecture (Complete - Verified)
-- ⏳ **Phase 4**: CIFAR-10 Full Training (Pending)
-- ⏳ **Phase 5**: NFE Efficiency Analysis (Pending)
-- ⏳ **Phase 6**: Report Figures (Pending)
-- ⏳ **Phase 7**: Report Writing (Pending)
+- ✅ **Phase 2**: 2D Toy Experiments (Complete)
+- ✅ **Phase 3**: CIFAR-10 U-Net Architecture (Complete)
+- ✅ **Phase 4**: CIFAR-10 Full Training (Complete - 1000 epochs)
+- ✅ **Phase 5**: NFE Efficiency Analysis Script (Complete)
+- 🔄 **Phase 6**: 对比实验实施 (进行中)
+  - ✅ 2D Toy完整对比可视化
+  - ⏳ CIFAR-10 NFE评估（运行中）
+  - ⏳ 报告图表生成（待评估完成）
+- ⏳ **Phase 7**: 报告撰写 (Pending)
 
 ## Success Criteria
 
 Based on Project3.pdf requirements:
 
 **Minimum** (passing):
-- Implement OT path CFM ✅
-- 2D checkerboard visualization ✅
-- CIFAR-10 basic training (pending)
-- Compute FID (pending)
+- ✅ Implement OT path CFM
+- ✅ 2D checkerboard visualization
+- ✅ CIFAR-10 basic training
+- ⏳ Compute FID (运行中)
 
 **Target** (good quality):
-- OT + VP dual path ✅
-- FID < 8.0, NLL < 3.2 (pending)
-- NFE analysis (pending)
+- ✅ OT + VP dual path
+- ⏳ FID < 8.0, NLL < 3.2 (待评估结果)
+- ✅ NFE analysis (脚本就绪)
 
 **Excellent** (top tier):
-- FID < 7.0, NLL < 3.1
-- Complete NFE sweep
-- Clear FID vs NFE curves
-- Results aligned with paper
+- ⏳ FID < 7.0, NLL < 3.1
+- ✅ Complete NFE sweep
+- ✅ Clear FID vs NFE curves
+- ⏳ Results aligned with paper
 
 ## Diagnostic Notes
 

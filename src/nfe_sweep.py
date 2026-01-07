@@ -28,9 +28,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run NFE Sweep for Flow Matching")
     parser.add_argument("--checkpoint_ot", type=str, help="Path to OT model checkpoint")
     parser.add_argument("--checkpoint_vp", type=str, help="Path to VP model checkpoint")
-    parser.add_argument("--model_channels", type=int, default=128, help="Model channels")
+    parser.add_argument("--model_channels", type=int, default=32, help="Model channels (must match checkpoint)")
     parser.add_argument("--num_samples", type=int, default=2000, help="Number of samples for FID (10k+ recommended for final)")
-    parser.add_argument("--batch_size", type=int, default=100, help="Batch size for generation")
+    parser.add_argument("--batch_size", type=int, default=512, help="Batch size for generation")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--output_dir", type=str, default="results/cifar10/nfe_sweep", help="Output directory")
     parser.add_argument("--ref_dir", type=str, default="data/cifar10_test_images", help="Directory to store reference images")
@@ -68,6 +68,8 @@ def prepare_reference_images(output_dir: str, num_images: int = 10000):
 
 def load_model(checkpoint_path, model_channels, device):
     print(f"Loading model from {checkpoint_path}...")
+    print(f"Using model_channels={model_channels}")
+
     model = UNet(
         in_channels=3,
         out_channels=3,
@@ -157,7 +159,7 @@ def main():
     prepare_reference_images(args.ref_dir, num_images=ref_count)
     
     # 3. Define NFE values
-    nfe_values = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 250, 300]
+    nfe_values = [10, 20, 30, 40, 50, 60, 80, 100]
     
     # 4. Run Sweeps
     results = {

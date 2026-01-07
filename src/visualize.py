@@ -310,7 +310,7 @@ def plot_density_evolution(
     bounds: Tuple[float, float] = (-4, 4),
     n_bins: int = 50,
     time_points: List[int] = [0,10,20,30,40,50,60,70,80,90,100],
-    n_samples: int = 10000,
+    n_samples: int = 100,
     save_path: Optional[str] = None,
 ) -> plt.Figure:
     """
@@ -384,8 +384,8 @@ def plot_flow_evolution(
     solver,
     bounds: Tuple[float, float] = (-4, 4),
     t_values: List[float] = [0.0, 0.1,0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    n_samples: int = 100,
-    num_steps: int = 100,
+    n_samples: int = 1000,
+    num_steps: int = 1000,
     save_path: Optional[str] = None,
     title: str = "Flow Evolution",
 ) -> plt.Figure:
