@@ -21,7 +21,7 @@ from pathlib import Path
 
 def plot_vector_field(
     model,
-    t_values: List[float] = [0.0, 0.25, 0.5, 0.75, 1.0],
+    t_values: List[float] = [0.0, 0.1,0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
     bounds: Tuple[float, float] = (-4, 4),
     n_grid: int = 20,
     save_path: Optional[str] = None,
@@ -113,7 +113,7 @@ def plot_vector_field(
 def plot_trajectories(
     model,
     solver,
-    n_samples: int = 20,
+    n_samples: int = 1000,
     bounds: Tuple[float, float] = (-4, 4),
     num_steps: int = 100,
     save_path: Optional[str] = None,
@@ -309,7 +309,7 @@ def plot_density_evolution(
     solver,
     bounds: Tuple[float, float] = (-4, 4),
     n_bins: int = 50,
-    time_points: List[int] = [0, 25, 50, 75, 100],
+    time_points: List[int] = [0,10,20,30,40,50,60,70,80,90,100],
     n_samples: int = 10000,
     save_path: Optional[str] = None,
 ) -> plt.Figure:
@@ -379,6 +379,90 @@ def plot_density_evolution(
     return fig
 
 
+def plot_flow_evolution(
+    model,
+    solver,
+    bounds: Tuple[float, float] = (-4, 4),
+    t_values: List[float] = [0.0, 0.1,0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    n_samples: int = 100,
+    num_steps: int = 100,
+    save_path: Optional[str] = None,
+    title: str = "Flow Evolution",
+) -> plt.Figure:
+    """
+    Visualize the evolution of the flow from noise to data.
+    
+    Creates a sequence of scatter plots showing the particle distribution
+    at different time points.
+
+    Args:
+        model: Trained vector field network
+        solver: ODE solver function
+        bounds: (min, max) bounds for the plot
+        t_values: List of time points to visualize (must be in [0, 1])
+        n_samples: Number of particles
+        num_steps: Number of integration steps for the solver
+        save_path: If provided, save figure to this path
+        title: Figure title
+
+    Returns:
+        fig: matplotlib Figure object
+    """
+    # Get device from model
+    device = next(model.parameters()).device
+
+    # Sample initial noise
+    x0 = torch.randn(n_samples, 2, device=device)
+
+    # Integrate full trajectory
+    with torch.no_grad():
+        # Trajectory shape: (num_steps+1, n_samples, 2)
+        trajectory = solver(model, x0, num_steps=num_steps, return_trajectory=True)
+
+    # Setup figure
+    fig, axes = plt.subplots(1, len(t_values), figsize=(4 * len(t_values), 4))
+    if len(t_values) == 1:
+        axes = [axes]
+
+    for ax, t in zip(axes, t_values):
+        # Find closest index in trajectory
+        idx = int(round(t * num_steps))
+        idx = min(max(idx, 0), num_steps)
+        
+        samples = trajectory[idx].detach().cpu().numpy()
+
+        # Scatter plot
+        ax.scatter(
+            samples[:, 0],
+            samples[:, 1],
+            s=1,
+            c='blue',
+            alpha=0.3,
+            rasterized=True
+        )
+
+        ax.set_title(f"t={t:.2f}")
+        ax.set_xlim(bounds)
+        ax.set_ylim(bounds)
+        ax.set_aspect("equal")
+        
+        # Remove ticks for cleaner look, or keep them? 
+        # Keeping them for quantitative reference
+        ax.set_xticks([])
+        ax.set_yticks([])
+        # ax.set_xlabel("x")
+        # ax.set_ylabel("y")
+
+    plt.suptitle(title, fontsize=16, y=1.05)
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"✅ Flow evolution saved to {save_path}")
+
+    return fig
+
+
 def plot_training_curves(
     losses_ot: List[float],
     losses_vp: Optional[List[float]] = None,
@@ -414,6 +498,106 @@ def plot_training_curves(
         print(f"✅ Training curves saved to {save_path}")
 
     return fig
+
+
+def plot_cifar_metrics(
+    train_losses: List[float],
+    nll_values: List[Tuple[int, float]] = [],
+    save_path: str = "training_metrics.png",
+):
+    """
+    Plot CIFAR-10 training metrics (Loss and NLL).
+
+    Args:
+        train_losses: List of training losses per epoch
+        nll_values: List of (epoch, nll) tuples
+        save_path: Path to save the figure
+    """
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    epochs = range(1, len(train_losses) + 1)
+
+    # Plot Loss
+    color = "tab:blue"
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Train Loss", color=color)
+    ax1.plot(epochs, train_losses, color=color, linewidth=2, label="Train Loss")
+    ax1.tick_params(axis="y", labelcolor=color)
+    ax1.grid(True, alpha=0.3)
+
+    # Plot NLL if available
+    if nll_values:
+        ax2 = ax1.twinx()
+        color = "tab:red"
+        ax2.set_ylabel("NLL (bits/dim)", color=color)
+        
+        nll_epochs, nll_scores = zip(*nll_values)
+        ax2.plot(nll_epochs, nll_scores, color=color, linewidth=2, marker="o", label="NLL")
+        ax2.tick_params(axis="y", labelcolor=color)
+
+    plt.title("CIFAR-10 Training Metrics")
+    
+    # Save
+    Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    print(f"✅ Metrics plot saved to {save_path}")
+    plt.close()
+
+
+def plot_nfe_curve(
+    nfe_list: List[int],
+    fid_scores: List[float],
+    label: str = "OT Path",
+    save_path: str = "nfe_curve.png",
+    compare_nfe: Optional[List[int]] = None,
+    compare_fid: Optional[List[float]] = None,
+    compare_label: str = "VP Path",
+):
+    """
+    Plot FID vs NFE curve.
+
+    Args:
+        nfe_list: List of NFE values (x-axis)
+        fid_scores: List of FID scores (y-axis)
+        label: Label for the main curve
+        save_path: Path to save the figure
+        compare_nfe: Optional list of NFE values for comparison model
+        compare_fid: Optional list of FID scores for comparison model
+        compare_label: Label for comparison model
+    """
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # Main curve
+    ax.plot(nfe_list, fid_scores, marker="o", linewidth=2, label=label)
+
+    # Comparison curve
+    if compare_nfe is not None and compare_fid is not None:
+        ax.plot(
+            compare_nfe,
+            compare_fid,
+            marker="s",
+            linewidth=2,
+            linestyle="--",
+            label=compare_label,
+        )
+
+    ax.set_xscale("log")
+    ax.set_xlabel("NFE (Number of Function Evaluations)")
+    ax.set_ylabel("FID (lower is better)")
+    ax.set_title("NFE Efficiency: FID vs Sampling Steps")
+    
+    # Set x-ticks to be the NFE values
+    all_nfes = sorted(list(set(nfe_list + (compare_nfe if compare_nfe else []))))
+    ax.set_xticks(all_nfes)
+    ax.set_xticklabels(all_nfes)
+    
+    ax.grid(True, alpha=0.3, which="both")
+    ax.legend()
+
+    Path(save_path).parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(save_path, dpi=150, bbox_inches="tight")
+    print(f"✅ NFE curve saved to {save_path}")
+    plt.close()
 
 
 def save_samples(
@@ -471,7 +655,7 @@ def create_report_figures(
     # 1. Vector fields
     plot_vector_field(
         model_ot,
-        t_values=[0.0, 0.5, 1.0],
+        t_values=[0.0, 0.1,0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         save_path=str(output_path / "vector_field_ot.png"),
         title_prefix="OT Path - ",
     )

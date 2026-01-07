@@ -7,6 +7,7 @@ Supports OT (Optimal Transport) and VP (Variance Preserving) paths.
 
 import sys
 from pathlib import Path
+import json
 
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
@@ -22,7 +23,7 @@ from src.cfm import ConditionalFlowMatching
 from src.models import UNet
 from src.data import get_cifar10_dataloader
 from src.solver import euler_solver
-from src.visualize import save_samples
+from src.visualize import save_samples, plot_cifar_metrics
 from src.metrics import compute_nll
 
 
@@ -106,6 +107,12 @@ def train(args):
     start_time = time.time()
     losses = []
     
+    # History for logging
+    history = {
+        "train_loss": [],
+        "nll": []  # List of (epoch, value)
+    }
+    
     for epoch in range(1, args.epochs + 1):
         model.train()
         epoch_loss = 0.0
@@ -133,6 +140,7 @@ def train(args):
         
         avg_loss = epoch_loss / n_batches
         losses.append(avg_loss)
+        history["train_loss"].append(avg_loss)
         print(f"Epoch {epoch} finished. Avg Loss: {avg_loss:.6f}")
         
         # Save checkpoint
@@ -165,8 +173,19 @@ def train(args):
                     # Using eval_batch defined earlier
                     nll, std = compute_nll(model, eval_batch, method="dopri5")
                     print(f"NLL: {nll:.4f} +/- {std:.4f} bits/dim")
+                    history["nll"].append((epoch, nll))
                 except Exception as e:
                     print(f"NLL computation failed: {e}")
+
+        # Save logs and plot curves
+        with open(output_dir / "log.json", "w") as f:
+            json.dump(history, f, indent=4)
+        
+        plot_cifar_metrics(
+            history["train_loss"], 
+            history["nll"], 
+            save_path=str(output_dir / "training_metrics.png")
+        )
 
     total_time = time.time() - start_time
     print(f"Training finished in {total_time/3600:.2f} hours")

@@ -29,15 +29,16 @@ from visualize import (
     plot_trajectories,
     compare_paths,
     plot_training_curves,
+    plot_flow_evolution,
 )
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train Flow Matching on 2D toy data")
     parser.add_argument("--path", type=str, default="OT", choices=["OT", "VP"])
-    parser.add_argument("--hidden_dim", type=int, default=512)
-    parser.add_argument("--num_layers", type=int, default=8)
-    parser.add_argument("--epochs", type=int, default=100, help="Increased default epochs")
+    parser.add_argument("--hidden_dim", type=int, default=128, help="Reduced from 512")
+    parser.add_argument("--num_layers", type=int, default=3, help="Reduced from 8")
+    parser.add_argument("--epochs", type=int, default=2000, help="Reasonable convergence for 2D")
     parser.add_argument("--batch_size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--dataset", type=str, default="checkerboard")
@@ -156,7 +157,7 @@ def main():
     # Vector field
     plot_vector_field(
         model,
-        t_values=[0.0, 0.5, 1.0],
+        t_values=[0.0, 0.1,0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         save_path=str(fig_dir / f"vector_field_{args.path}.png"),
         title_prefix=f"{args.path} Path - ",
     )
@@ -166,10 +167,19 @@ def main():
     plot_trajectories(
         model,
         euler_solver,
-        n_samples=20,
+        n_samples=100,
         num_steps=100,  # More steps for smoother trajectories
         save_path=str(fig_dir / f"trajectories_{args.path}.png"),
         title=f"{args.path} Path - Generation Trajectories",
+    )
+    plt.close("all")
+
+    # Flow Evolution
+    plot_flow_evolution(
+        model,
+        euler_solver,
+        save_path=str(fig_dir / f"flow_evolution_{args.path}.png"),
+        title=f"{args.path} Path - Flow Evolution",
     )
     plt.close("all")
 

@@ -16,8 +16,8 @@
 - [x] Phase 1: 环境搭建与核心算法 ✅ **完成** (2026-01-04)
 - [x] Phase 2: 2D 玩具数据实验 ✅ **完成** (2026-01-04)
 - [x] Phase 3: CIFAR-10 U-Net 架构 ✅ **完成** (2026-01-04)
-- [ ] Phase 4: CIFAR-10 完整训练 (5-7 天)
-- [ ] Phase 5: NFE 效率分析 (2-3 天)
+- [x] Phase 4: CIFAR-10 完整训练 (5-7 天) - **脚本已验证（含 Loss/NLL 可视化与记录），显存泄漏已修复**
+- [x] Phase 5: NFE 效率分析 (2-3 天) - **脚本已实现并验证**
 - [ ] Phase 6: 报告撰写 (2-3 天)
 
 ---
@@ -26,7 +26,7 @@
 
 ```
 Flow_Matching/
-├── 📄 GEMINI.md                          # AI 助手使用指南
+├── 📄 CLAUDE.md                          # AI 助手使用指南
 ├── 📄 plan.md                            # 本文件：实施计划
 ├── 📄 pyproject.toml                     # 项目依赖
 ├── 📄 Project3.pdf                       # 大作业要求
@@ -67,12 +67,12 @@ Flow_Matching/
     └── report.md                         # 报告正文
 ```
 
----
+---s
 
 ## 📊 结构说明
 
 ### 根目录（项目文件）
-- **GEMINI.md**: AI 助手使用说明
+- **CLAUDE.md**: AI 助手使用说明
 - **plan.md**: 实施计划（本文档）
 - **pyproject.toml**: 依赖管理
 - **Project3.pdf**: 大作业要求
@@ -117,8 +117,8 @@ Flow_Matching/
 | `src/train_toy.py` | 🔴 最高 | ✅ | 2D 训练 |
 | `src/compare.py` | 🔴 最高 | ✅ | OT vs VP 对比训练 |
 | `src/train_cifar.py` | 🟡 中 | ✅ | CIFAR-10 训练 |
-| `src/metrics.py` | 🟡 中 | ⏳ | FID/NLL |
-| `src/nfe_sweep.py` | 🟢 低 | ⏳ | NFE 分析 |
+| `src/metrics.py` | 🟡 中 | ✅ | FID/NLL |
+| `src/nfe_sweep.py` | 🟢 低 | ✅ | NFE 分析 |
 
 ---
 - [ ] 实现 CFM 核心算法（OT 路径 + VP 扩散路径）

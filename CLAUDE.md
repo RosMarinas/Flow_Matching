@@ -1,4 +1,4 @@
-# GEMINI.md
+# CLAUDE.md
 
 
 ## Core Philosophy
@@ -12,7 +12,7 @@
 
 This is a Flow Matching implementation for a graduate machine learning course (Project 3). The project implements the paper "Flow Matching for Generative Modeling" (ICLR 2023), focusing on reproducing key experiments on 2D toy data and CIFAR-10.
 
-**Current Status**: Phase 3 complete. **CIFAR-10 training infrastructure is ready.** Implemented U-Net architecture, data loader, and training script (`src/train_cifar.py`). Verified correct execution on CUDA device.
+**Current Status**: Phase 5 complete (Code). **NFE sweep script implemented and verified.** Ready for full-scale experiments.
 
 ## Environment Management
 
@@ -72,6 +72,7 @@ The codebase follows a **flat structure** (max 2 levels deep) in `src/`:
 6. **`src/visualize.py`** - Visualization utilities
    - `plot_vector_field()` - Quiver plot of vector field at different times
    - `plot_trajectories()` - Generation paths from noise to data
+   - `plot_flow_evolution()` - Scatter plots of particle distribution over time
    - `compare_paths()` - Side-by-side OT vs VP comparison
 
 7. **`src/train_toy.py`** - 2D training script
@@ -90,12 +91,13 @@ The codebase follows a **flat structure** (max 2 levels deep) in `src/`:
 - **U-Net architecture for CIFAR-10**
 - **CIFAR-10 data loader**
 - **CIFAR-10 training script (`src/train_cifar.py`)**
+- **NLL/FID metrics (`src/metrics.py`) - Verified memory efficient**
+- **NFE efficiency analysis script (`src/nfe_sweep.py`)**
 
 ### What's NOT Yet Implemented (Phase 4-7: ⏳ Pending)
 
-- CIFAR-10 Full Training (Phase 4)
-- FID/NLL evaluation metrics
-- NFE sweep/ablation study
+- CIFAR-10 Full Training (Phase 4 - Running)
+- Report Writing (Phase 6-7)
 
 ## Running Experiments
 
@@ -248,4 +250,4 @@ Based on Project3.pdf requirements:
 - `plan.md` - Detailed implementation plan (in Chinese)
 - `Flow_Matching_Detailed_Analysis.md` - Paper analysis (in Chinese)
 - `Project3.pdf` - Course assignment requirements
-- `GEMINI.md` - This file
+- `CLAUDE.md` - This file
