@@ -12,11 +12,12 @@
 
 This is a Flow Matching implementation for a graduate machine learning course (Project 3). The project implements the paper "Flow Matching for Generative Modeling" (ICLR 2023), focusing on reproducing key experiments on 2D toy data and CIFAR-10.
 
-**Current Status**: Phase 6 进行中 - 对比实验实施。
-- ✅ 2D Toy完整对比可视化已完成
-- ✅ CIFAR-10训练完成（1000 epochs）
-- ⏳ CIFAR-10 NFE评估运行中
-- ⏳ 报告图表生成中
+**Current Status**: ⏳ **Phase 8 IN PROGRESS** (2026-01-07)
+- ✅ 2D Toy: OT vs VP完整对比可视化
+- ✅ CIFAR-10: OT和VP模型训练完成（1000 epochs）
+- ✅ CIFAR-10: NFE评估完成（8个NFE值，2000样本）
+- ✅ 初步报告完成
+- ⏳ **正在进行**: DDPM完整实现和三方法对比
 
 ## Environment Management
 
@@ -84,89 +85,118 @@ The codebase follows a **flat structure** (max 2 levels deep) in `src/`:
    - Supports hyperparameter configuration via CLI args
    - Generates visualizations automatically
 
-### What's Implemented (Phase 1-6: ✅ Complete)
+### What's Implemented (Phases 1-7: ✅ Complete)
 
 **核心算法**：
-- CFM core algorithm with OT/VP/VE paths (Mathematically Verified)
-- MLP vector field network for 2D data
-- U-Net architecture for CIFAR-10
-- ODE solvers (Euler, RK4)
-- NLL/FID metrics (`src/metrics.py`) - Memory efficient
+- ✅ CFM core algorithm with OT/VP/VE paths
+- ✅ DDPM core algorithm (`src/ddpm.py`)
+- ✅ DDIM sampling with variable NFE (`src/ddpm_solver.py`)
+- ✅ MLP and U-Net architectures (support both continuous and discrete time)
+- ✅ ODE solvers (Euler, RK4)
+- ✅ NLL/FID metrics (`src/metrics.py`)
 
 **训练脚本**：
-- 2D toy training (`src/train_toy.py`) - 自动生成可视化
-- CIFAR-10 training (`src/train_cifar.py`) - 1000 epochs完成
+- ✅ 2D toy CFM training (`src/train_toy.py`)
+- ✅ 2D toy DDPM training (`src/train_toy_ddpm.py`)
+- ✅ CIFAR-10 CFM training (`src/train_cifar.py`) - 1000 epochs完成
+- ⏳ CIFAR-10 DDPM training (`src/train_cifar_ddpm.py`) - 需创建
 
 **评估与可视化**：
-- NFE efficiency analysis (`src/nfe_sweep.py`) - FID vs NFE曲线
-- Model evaluation (`src/evaluate_models.py`) - 调用nfe_sweep
-- Visualization utilities (`src/visualize.py`) - 包含所有对比函数
-- Report figure generator (`src/generate_report_figures.py`) - 汇总所有图表
+- ✅ NFE efficiency analysis (`src/nfe_sweep.py`) - OT vs VP对比
+- ✅ Visualization utilities (`src/visualize.py`)
+- ✅ Report figure generator (`src/generate_report_figures.py`)
 
 **已完成实验**：
-- ✅ 2D Toy: OT vs VP完整对比（向量场、轨迹、流演化）
-- ✅ CIFAR-10: OT和VP模型训练完成（1000 epochs）
-- ⏳ CIFAR-10: NFE sweep评估运行中
+- ✅ 2D Toy: OT vs VP完整对比
+- ✅ CIFAR-10: OT和VP模型训练（1000 epochs）
+- ✅ CIFAR-10: NFE sweep评估（8个NFE值）
 
-### What's NOT Yet Implemented (Phase 7: ⏳ Pending)
+### What's Being Implemented (Phase 8: ⏳ In Progress)
 
-- DDPM baseline implementation（可选，用于完整对比）
-- Final report writing
+- ⏳ CIFAR-10 DDPM training script creation
+- ⏳ DDPM model training (2D + CIFAR-10)
+- ⏳ Extend NFE sweep for three-way comparison (OT + VP + DDPM)
+- ⏳ Three-way visualization generation
+- ⏳ Documentation updates
 
 ## Running Experiments
 
-### 2D Toy Data (✅ Complete)
+### 2D Toy Data (✅ CFM Complete, ⏳ DDPM Pending)
 
+**CFM Models**:
 ```bash
-# Train models
+# Train CFM models
 uv run src/train_toy.py --path OT --epochs 2000 --hidden_dim 512 --num_layers 5
 uv run src/train_toy.py --path VP --epochs 2000 --hidden_dim 512 --num_layers 5
+```
 
-# Generate comparison figures
+**DDPM Model** (Phase 8):
+```bash
+# Train DDPM model (30-60 min)
+uv run src/train_toy_ddpm.py \
+    --hidden_dim 128 \
+    --num_layers 3 \
+    --epochs 2000 \
+    --dataset checkerboard \
+    --output_dir results/toy/DDPM
+```
+
+**Generate figures**:
+```bash
 PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py --generate_2d
 ```
 
-Outputs:
-- Checkpoints: `results/toy/checkpoints/model_ot.pt`, `model_vp.pt`
-- Figures: `report/figures/toy/` (OT vs VP对比图)
+### CIFAR-10 (✅ CFM Complete, ⏳ DDPM In Progress)
 
-### CIFAR-10 (⏳ 评估中)
-
-**训练已完成**：
+**CFM Models** (已训练完成):
 ```bash
-# Models already trained (1000 epochs)
 # OT: results/cifar10/OT/model_final_1000epoch.pt
 # VP: results/cifar10/VP/model_final_1000epoch.pt
 ```
 
-**运行评估**：
+**DDPM Model** (Phase 8):
 ```bash
-# Quick evaluation (2000 samples, ~30 min)
+# Quick validation (100 epochs, ~45 min)
+uv run src/train_cifar_ddpm.py \
+    --epochs 100 \
+    --output_dir results/cifar10/DDPM
+
+# Full training (1000 epochs, ~6-8 hours)
+uv run src/train_cifar_ddpm.py \
+    --epochs 1000 \
+    --beta_schedule linear \
+    --output_dir results/cifar10/DDPM \
+    --device cuda
+```
+
+### Three-Way Comparison (Phase 8)
+
+**Run NFE sweep**:
+```bash
+# Two-way comparison (OT vs VP) - Already done ✅
 uv run src/evaluate_models.py \
     --checkpoint_ot results/cifar10/OT/model_final_1000epoch.pt \
     --checkpoint_vp results/cifar10/VP/model_final_1000epoch.pt \
     --num_samples 2000
 
-# Full evaluation (10000 samples, ~2-3 hours)
-uv run src/evaluate_models.py \
+# Three-way comparison (OT + VP + DDPM) - Phase 8 ⏳
+uv run src/nfe_sweep.py \
     --checkpoint_ot results/cifar10/OT/model_final_1000epoch.pt \
     --checkpoint_vp results/cifar10/VP/model_final_1000epoch.pt \
-    --num_samples 10000
+    --checkpoint_ddpm results/cifar10/DDPM/model_final_1000epoch.pt \
+    --num_samples 2000 \
+    --model_channels 32 \
+    --output_dir results/cifar10/nfe_sweep_three_way
 ```
 
-**生成对比图表**：
+**Generate comparison figures**:
 ```bash
-# After evaluation completes
+# Two-way figures
 PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py --generate_cifar10
 
-# Or generate all figures at once
-PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py
+# Three-way figures (Phase 8)
+PYTHONIOENCODING=utf-8 uv run src/generate_report_figures.py --generate_three_way
 ```
-
-Outputs:
-- NFE results: `results/cifar10/nfe_sweep/nfe_comparison_results.json`
-- Figures: `report/figures/cifar10/` (FID vs NFE, sample comparison)
-- Tables: `report/tables/table1_comparison.md`
 
 ## Key Implementation Details
 
@@ -285,37 +315,43 @@ If loss doesn't converge:
 
 ## Project Phases
 
-- ✅ **Phase 1**: Environment & Core Algorithm (Complete)
-- ✅ **Phase 2**: 2D Toy Experiments (Complete)
+- ✅ **Phase 1-2**: Core Algorithm & 2D Toy (Complete)
 - ✅ **Phase 3**: CIFAR-10 U-Net Architecture (Complete)
 - ✅ **Phase 4**: CIFAR-10 Full Training (Complete - 1000 epochs)
-- ✅ **Phase 5**: NFE Efficiency Analysis Script (Complete)
-- 🔄 **Phase 6**: 对比实验实施 (进行中)
-  - ✅ 2D Toy完整对比可视化
-  - ⏳ CIFAR-10 NFE评估（运行中）
-  - ⏳ 报告图表生成（待评估完成）
-- ⏳ **Phase 7**: 报告撰写 (Pending)
+- ✅ **Phase 5**: NFE Efficiency Analysis (Complete - 8 NFE values)
+- ✅ **Phase 6**: Comparison Experiments (Complete - OT vs VP)
+- ✅ **Phase 7**: Initial Report (Complete)
+- ⏳ **Phase 8**: DDPM vs Flow Matching (In Progress)
+  - ⏳ 8.1: Train 2D DDPM model
+  - ⏳ 8.2: Train CIFAR-10 DDPM model
+  - ⏳ 8.3: Extend NFE sweep for DDPM
+  - ⏳ 8.4: Run three-way NFE sweep
+  - ⏳ 8.5: Generate three-way visualizations
+  - ⏳ 8.6: Update documentation
 
 ## Success Criteria
 
 Based on Project3.pdf requirements:
 
-**Minimum** (passing):
+**Minimum** (passing, 60-70分):
 - ✅ Implement OT path CFM
 - ✅ 2D checkerboard visualization
 - ✅ CIFAR-10 basic training
-- ⏳ Compute FID (运行中)
+- ✅ Compute FID
 
-**Target** (good quality):
+**Target** (good quality, 70-85分):
 - ✅ OT + VP dual path
-- ⏳ FID < 8.0, NLL < 3.2 (待评估结果)
-- ✅ NFE analysis (脚本就绪)
+- ✅ FID < 8.0, NLL < 3.2 (CFM models)
+- ✅ NFE analysis (OT vs VP)
+- ✅ Detailed visualizations
 
-**Excellent** (top tier):
-- ⏳ FID < 7.0, NLL < 3.1
+**Excellent** (top tier, 85-100分):
+- ✅ All Target requirements
+- ⏳ **DDPM baseline implementation**
+- ⏳ **Three-way comparison (OT + VP + DDPM)**
 - ✅ Complete NFE sweep
 - ✅ Clear FID vs NFE curves
-- ⏳ Results aligned with paper
+- ⏳ **Results aligned with paper Table 1**
 
 ## Diagnostic Notes
 

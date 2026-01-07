@@ -57,6 +57,52 @@ class SinusoidalEmbedding(nn.Module):
         return embeddings
 
 
+class DiscreteTimeEmbedding(nn.Module):
+    """
+    Sinusoidal embedding for discrete timesteps (DDPM).
+
+    For DDPM: t ∈ {0, 1, ..., T-1} where T=1000
+    We normalize to [0, 1] to match CFM's continuous time embedding.
+
+    Args:
+        dim: Dimension of embedding
+        max_timesteps: Maximum timestep value (default: 1000)
+    """
+
+    def __init__(self, dim: int = 256, max_timesteps: int = 1000):
+        super().__init__()
+        self.dim = dim
+        self.max_timesteps = max_timesteps
+
+    def forward(self, t: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            t: Discrete timestep tensor, shape (B,) with values in [0, T-1]
+
+        Returns:
+            embedding: Shape (B, dim)
+        """
+        device = t.device
+        half_dim = self.dim // 2
+
+        # Normalize to [0, 1] for consistency with CFM
+        t_normalized = t.float() / self.max_timesteps
+
+        # Use same sinusoidal frequencies as CFM
+        embeddings = math.log(10000) / (half_dim - 1)
+        embeddings = torch.exp(torch.arange(half_dim, device=device) * -embeddings)
+
+        # Reshape for broadcasting
+        if t_normalized.dim() == 1:
+            t_normalized = t_normalized.unsqueeze(-1)
+
+        # Sinusoidal embedding
+        embeddings = t_normalized * embeddings
+        embeddings = torch.cat([torch.sin(embeddings), torch.cos(embeddings)], dim=-1)
+
+        return embeddings
+
+
 class MLPVectorField(nn.Module):
     """
     MLP-based vector field network for 2D data.
@@ -71,6 +117,8 @@ class MLPVectorField(nn.Module):
         num_layers: Number of hidden layers (default: 5)
         time_embed_dim: Dimension of time embedding (default: 256)
         dropout: Dropout rate (default: 0.0)
+        use_discrete_time: Use discrete timestep embedding for DDPM (default: False)
+        max_timesteps: Maximum timestep for discrete embedding (default: 1000)
     """
 
     def __init__(
@@ -79,15 +127,21 @@ class MLPVectorField(nn.Module):
         num_layers: int = 5,
         time_embed_dim: int = 256,
         dropout: float = 0.0,
+        use_discrete_time: bool = False,
+        max_timesteps: int = 1000,
     ):
         super().__init__()
 
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
         self.time_embed_dim = time_embed_dim
+        self.use_discrete_time = use_discrete_time
 
         # Time embedding
-        self.time_mlp = SinusoidalEmbedding(time_embed_dim)
+        if use_discrete_time:
+            self.time_mlp = DiscreteTimeEmbedding(time_embed_dim, max_timesteps)
+        else:
+            self.time_mlp = SinusoidalEmbedding(time_embed_dim)
 
         # Input projection: 2D position + time embedding
         self.input_proj = nn.Linear(2 + time_embed_dim, hidden_dim)
@@ -465,10 +519,22 @@ class AttentionBlock(nn.Module):
 class UNet(nn.Module):
     """
     U-Net architecture for CIFAR-10 image generation.
-    
+
     Based on the architecture used in Dhariwal & Nichol (2021).
     Input: (B, 3, 32, 32) + time t
     Output: (B, 3, 32, 32)
+
+    Args:
+        in_channels: Number of input channels (default: 3)
+        model_channels: Base channel count (default: 256)
+        out_channels: Number of output channels (default: 3)
+        num_res_blocks: Number of residual blocks per level (default: 2)
+        attention_resolutions: Resolutions at which to use attention (default: (16,))
+        dropout: Dropout rate (default: 0.1)
+        channel_mult: Channel multiplier for each level (default: (1, 2, 2, 2))
+        num_heads: Number of attention heads (default: 4)
+        use_discrete_time: Use discrete timestep embedding for DDPM (default: False)
+        max_timesteps: Maximum timestep for discrete embedding (default: 1000)
     """
     def __init__(
         self,
@@ -480,6 +546,8 @@ class UNet(nn.Module):
         dropout=0.1,
         channel_mult=(1, 2, 2, 2),
         num_heads=4,
+        use_discrete_time=False,
+        max_timesteps=1000,
     ):
         super().__init__()
 
@@ -490,14 +558,25 @@ class UNet(nn.Module):
         self.attention_resolutions = attention_resolutions
         self.dropout = dropout
         self.channel_mult = channel_mult
+        self.use_discrete_time = use_discrete_time
 
         time_embed_dim = model_channels * 4
-        self.time_embed = nn.Sequential(
-            SinusoidalEmbedding(model_channels),
-            nn.Linear(model_channels, time_embed_dim),
-            nn.SiLU(),
-            nn.Linear(time_embed_dim, time_embed_dim),
-        )
+
+        # Choose time embedding based on model type
+        if use_discrete_time:
+            self.time_embed = nn.Sequential(
+                DiscreteTimeEmbedding(model_channels, max_timesteps),
+                nn.Linear(model_channels, time_embed_dim),
+                nn.SiLU(),
+                nn.Linear(time_embed_dim, time_embed_dim),
+            )
+        else:
+            self.time_embed = nn.Sequential(
+                SinusoidalEmbedding(model_channels),
+                nn.Linear(model_channels, time_embed_dim),
+                nn.SiLU(),
+                nn.Linear(time_embed_dim, time_embed_dim),
+            )
 
         self.input_blocks = nn.ModuleList([
             TimestepEmbedSequential(nn.Conv2d(in_channels, model_channels, 3, padding=1))
