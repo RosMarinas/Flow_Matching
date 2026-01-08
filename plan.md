@@ -355,3 +355,95 @@ uv run src/sample_cifar_with_labels.py \
 **总计**: ~2-4天
 
 ---
+
+---
+
+## Project3 报告撰写计划
+
+**报告目标**: 完成Flow Matching论文复现的项目报告（8页，LaTeX格式）
+
+**当前状态**: 📝 **报告大纲已完成，开始撰写**
+
+**报告文件夹**: `paper_draft/`（report/已占用）
+
+---
+
+### 报告结构（8页总计）
+
+| 章节 | 页数 | 关键内容 |
+|------|------|----------|
+| 1. 引言 | 0.7页 | 论文背景、核心问题、复现工作内容 |
+| 2. 相关工作 | 0.8页 | DDPM、Score模型、Flow Matching |
+| 3. 方法 | 1.5页 | 算法模型、实现细节 |
+| 4. 实验 | 4.0页 | **核心章节**，2D Toy + CIFAR-10 |
+| 5. 结论 | 0.5页 | 总结、展望 |
+| 参考文献 | 0.5页 | 核心论文引用 |
+
+---
+
+### 核心图表清单
+
+#### 2D Toy实验
+1. **图1**: 三种方法的粒子演化对比（3列并排）
+   - `report/figures/toy/ddpm_evolution.png`
+   - `report/figures/toy/flow_evolution_OT.png`
+   - `report/figures/toy/flow_evolution_VP.png`
+
+2. **图2**: OT vs VP轨迹对比
+   - `report/figures/toy/ot_vs_vp_trajectories.png`
+
+3. **图3**: 向量场对比（2列并排）
+   - `report/figures/toy/vector_field_OT.png`
+   - `report/figures/toy/vector_field_VP.png`
+
+#### CIFAR-10实验
+4. **图4**: 生成样本随epoch变化（4×2网格）
+5. **图5**: 生成样本随NFE变化（2×2网格）
+6. **图6**: DDPM采样错误分析（2列并排）
+   - Linear vs Cosine schedule对比
+
+#### NFE效率分析
+7. **图7**: FID vs NFE曲线（核心结果图）
+   - `report/figures/cifar10/nfe_comparison_three_way.png`
+
+#### 定量结果表格
+- **表1**: 三方法FID对比（不同NFE）
+- **表2**: 采样效率对比（速度提升）
+- **表3**: 与论文结果对比
+
+---
+
+### 下一步行动
+
+#### 1. 创建LaTeX项目结构
+- [x] 创建`paper_draft/`目录
+- [ ] 创建`paper_draft/figures/`子目录
+- [ ] 创建主LaTeX文件`paper_draft/main.tex`
+- [ ] 创建参考文献文件`paper_draft/references.bib`
+
+#### 2. 整理实验图片
+- [ ] 复制2D Toy图片到`paper_draft/figures/toy/`
+- [ ] 复制CIFAR-10图片到`paper_draft/figures/cifar10/`
+- [ ] 检查图片清晰度和格式
+
+#### 3. 提取定量数据
+- [ ] 从`results/cifar10/nfe_sweep_three_way/nfe_comparison_results.json`提取FID数据
+- [ ] 准备表格1、2、3的数据
+
+#### 4. 撰写LaTeX报告
+- [ ] 按照大纲逐章节撰写
+- [ ] 特别注意公式引用标注
+- [ ] DDPM采样错误分析要诚实
+
+#### 5. 格式检查和优化
+- [ ] 控制在8页以内
+- [ ] 使用subfigure并排显示节省空间
+- [ ] 检查图表编号和引用
+- [ ] 统一参考文献格式
+
+---
+
+**报告目标分数**: 85-90分（优秀水平）
+
+**最后更新**: 2026-01-08
+

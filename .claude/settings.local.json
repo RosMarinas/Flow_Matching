@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(ls:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(xelatex:*)"
     ],
     "deny": [],
     "ask": []

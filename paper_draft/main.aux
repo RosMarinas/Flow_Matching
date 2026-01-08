@@ -1,0 +1,65 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand*\HyPL@Entry[1]{}
+\citation{lipman2023flow}
+\citation{ho2020denoising}
+\citation{song2021score}
+\citation{lipman2023flow}
+\HyPL@Entry{0<</S/D>>}
+\@writefile{toc}{\contentsline {section}{\numberline {1}引言}{1}{section.1}\protected@file@percent }
+\newlabel{sec:introduction}{{1}{1}{引言}{section.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}主要工作}{1}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}相关工作与核心理论}{1}{section.2}\protected@file@percent }
+\newlabel{sec:related_work}{{2}{1}{相关工作与核心理论}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}扩散模型与连续时间流}{1}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Flow Matching}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}方法实现}{2}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{3}{2}{方法实现}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}模型实现}{2}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}路径配置}{2}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}类别条件生成扩展 (扩展部分)}{3}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}训练过程与演化分析}{3}{section.4}\protected@file@percent }
+\newlabel{sec:training}{{4}{3}{训练过程与演化分析}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}损失函数收敛}{3}{subsection.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces 训练损失曲线对比。}}{3}{figure.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:train_loss}{{1}{3}{训练损失曲线对比。}{figure.caption.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}样本演化对比}{3}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces 不同训练阶段的生成样本演化（NFE=100）。OT 路径在早期即可捕捉到清晰的物体轮廓，展现了强大的学习效率。}}{4}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:sample_evolution}{{2}{4}{不同训练阶段的生成样本演化（NFE=100）。OT 路径在早期即可捕捉到清晰的物体轮廓，展现了强大的学习效率。}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}注：DDPM的实验过程}{4}{subsection.4.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces 1000epoch下DDPM在不同NFE下的结果}}{4}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:DDPMatNFE}{{3}{4}{1000epoch下DDPM在不同NFE下的结果}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}实验结果与效率评估}{5}{section.5}\protected@file@percent }
+\newlabel{sec:results}{{5}{5}{实验结果与效率评估}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}2D Toy 数据：几何直觉验证}{5}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.1}粒子演化动力学}{5}{subsubsection.5.1.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces 2D Toy 粒子演化过程对比。}}{5}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:toy_evolution}{{4}{5}{2D Toy 粒子演化过程对比。}{figure.caption.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {5.1.2}轨迹与向量场分析}{5}{subsubsection.5.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}CIFAR-10 采样效率分析}{5}{subsection.5.2}\protected@file@percent }
+\newlabel{fig:traj_compare}{{5a}{6}{生成轨迹对比：OT（左）vs VP（右）}{figure.caption.5}{}}
+\newlabel{sub@fig:traj_compare}{{a}{6}{生成轨迹对比：OT（左）vs VP（右）}{figure.caption.5}{}}
+\newlabel{fig:vf_ot}{{5b}{6}{OT 向量场 ($t=0-1$)}{figure.caption.5}{}}
+\newlabel{sub@fig:vf_ot}{{b}{6}{OT 向量场 ($t=0-1$)}{figure.caption.5}{}}
+\newlabel{fig:vf_vp}{{5c}{6}{VP 向量场 ($t=0-1$)}{figure.caption.5}{}}
+\newlabel{sub@fig:vf_vp}{{c}{6}{VP 向量场 ($t=0-1$)}{figure.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces 微观机制分析。\textbf  {(a)} 对于同一Flow过程，OT的曲线要比VP更直。\textbf  {(b)-(c)} OT 向量场呈现出整齐的一致性方向，易于神经网络拟合；相比之下，VP 向量场包含复杂的旋转分量（Curl），学习难度更大。}}{6}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:toy_mechanisms}{{5}{6}{微观机制分析。\textbf {(a)} 对于同一Flow过程，OT的曲线要比VP更直。\textbf {(b)-(c)} OT 向量场呈现出整齐的一致性方向，易于神经网络拟合；相比之下，VP 向量场包含复杂的旋转分量（Curl），学习难度更大。}{figure.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces FID vs NFE 核心结果对比。OT 路径在极低步数下即可实现极高质量生成。}}{6}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:nfe_comparison}{{6}{6}{FID vs NFE 核心结果对比。OT 路径在极低步数下即可实现极高质量生成。}{figure.caption.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces 不同步数下的 FID 性能对比（仅部分，测试样本数 2000）}}{6}{table.caption.7}\protected@file@percent }
+\newlabel{tab:fid_comparison}{{1}{6}{不同步数下的 FID 性能对比（仅部分，测试样本数 2000）}{table.caption.7}{}}
+\bibstyle{IEEEtran}
+\bibdata{references}
+\bibcite{lipman2023flow}{1}
+\bibcite{ho2020denoising}{2}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}类别定向生成结果}{7}{subsection.5.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces 类别定向生成样本展示。模型能够准确根据输入标签生成具有对应语义特征的图像，证明了 Flow Matching 框架在条件生成任务中的有效性。}}{7}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:class_conditional}{{7}{7}{类别定向生成样本展示。模型能够准确根据输入标签生成具有对应语义特征的图像，证明了 Flow Matching 框架在条件生成任务中的有效性。}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}结论}{7}{section.6}\protected@file@percent }
+\newlabel{sec:conclusion}{{6}{7}{结论}{section.6}{}}
+\bibcite{song2020denoising}{3}
+\bibcite{song2021score}{4}
+\bibcite{heusel2017gans}{5}
+\gdef \@abspage@last{8}

@@ -81,7 +81,7 @@ def main():
     print(f"[OK] Model loaded from {checkpoint_path}")
 
     # Test sampling with different NFE values
-    nfe_values = [10, 20, 50, 100, 200]
+    nfe_values = [300, 500, 1000]
 
     for nfe in nfe_values:
         print(f"\n{'=' * 60}")
