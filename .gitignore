@@ -21,8 +21,9 @@ Flow_Matching/src/data/
 data/
 
 # Training results and logs
-Flow_Matching/results/
-results/
+
+results\cifar10\nfe_sweep\samples_OT_nfe_200
+
 
 # Model checkpoints (Large files)
 *.pth
@@ -35,3 +36,4 @@ results/
 
 # Agent / Temporary
 .gemini/
+
