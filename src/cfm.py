@@ -39,7 +39,7 @@ class ConditionalFlowMatching:
         self.sigma_min = sigma_min
 
         # Import path functions
-        from paths import get_conditional_path
+        from .paths import get_conditional_path
 
         self.path_fn = get_conditional_path(path_type, sigma_min)
 
@@ -166,6 +166,73 @@ class ConditionalFlowMatchingV2:
         v_pred = self.model(psi_t, t)
 
         # MSE loss
+        loss = F.mse_loss(v_pred, target)
+
+        return loss
+
+
+class FlowMatchingWithLabels(ConditionalFlowMatching):
+    """
+    Flow Matching with class label conditioning for generation.
+
+    This extends ConditionalFlowMatching to support class-labeled generation.
+    The model predicts v_t(x, t, labels) where labels is the class label.
+
+    Note: This is application-level class conditioning (generating samples
+    from specific classes), NOT the mathematical "Conditional Flow Matching"
+    from the paper (which refers to conditioning on data sample x1).
+
+    Args:
+        model: Neural network with forward(x, t, labels) signature
+        path_type: Type of probability path ('OT', 'VP', or 'VE')
+        sigma_min: Minimum noise for OT path (prevents numerical issues)
+    """
+
+    def __init__(
+        self,
+        model: nn.Module,
+        path_type: Literal["OT", "VP", "VE"] = "OT",
+        sigma_min: float = 1e-4,
+    ):
+        super().__init__(model, path_type, sigma_min)
+
+    def compute_loss(
+        self, x1: torch.Tensor, labels: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Compute CFM loss with class label conditioning.
+
+        Args:
+            x1: Data tensor, shape (B, C, H, W) for images or (B, D) for vectors
+            labels: Class labels, shape (B,) with values in [0, num_classes-1]
+
+        Returns:
+            loss: Scalar tensor
+        """
+        batch_size = x1.shape[0]
+        device = x1.device
+
+        # 1. Sample time t ~ Uniform[0, 1]
+        t = torch.rand(batch_size, device=device)
+
+        # Reshape t to match data dimensions
+        if len(x1.shape) == 4:  # Images: (B, C, H, W)
+            t = t.view(batch_size, 1, 1, 1)
+        elif len(x1.shape) == 2:  # Vectors: (B, D)
+            t = t.view(batch_size, 1)
+        else:
+            raise ValueError(f"Unsupported data shape: {x1.shape}")
+
+        # 2. Sample noise x0 ~ N(0, I)
+        x0 = torch.randn_like(x1)
+
+        # 3. Compute conditional path ψ_t(x0) and target u_t
+        psi_t, target = self.path_fn(x0, x1, t)
+
+        # 4. Predict vector field (WITH CLASS LABELS)
+        v_pred = self.model(psi_t, t, labels)
+
+        # 5. Compute MSE loss
         loss = F.mse_loss(v_pred, target)
 
         return loss
