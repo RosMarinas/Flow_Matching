@@ -177,8 +177,8 @@ def main():
     print("\nGenerating samples at different NFE values...")
     model.eval()
 
-    nfe_values = [10, 50, 100, 1000]
-    fig, axes = plt.subplots(2, 2, figsize=(12, 12))
+    nfe_values = [10, 20,30,40,50,60,80, 100]
+    fig, axes = plt.subplots(2, 4, figsize=(12, 12))
     axes = axes.flatten()
 
     with torch.no_grad():
@@ -189,7 +189,8 @@ def main():
                 num_samples=1000,
                 input_shape=(2,),
                 num_steps=nfe,
-                device=args.device
+                device=args.device,
+                schedule=args.beta_schedule
             )
 
             ax = axes[idx]
@@ -205,6 +206,23 @@ def main():
     plt.tight_layout()
     plt.savefig(fig_dir / "ddpm_samples_nfe_comparison.png", dpi=150)
     print(f"[OK] Samples saved: {fig_dir}/ddpm_samples_nfe_comparison.png")
+
+    # Generate DDPM evolution visualization (analogous to Flow Matching Figure 1)
+    print("\nGenerating DDPM evolution visualization...")
+    from src.visualize import plot_ddpm_evolution
+
+    plot_ddpm_evolution(
+        model,
+        bounds=(-4, 4),
+        timesteps=[1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 0],
+        n_samples=10000,
+        eta=0.0,
+        device=args.device,
+        beta_schedule=args.beta_schedule,
+        save_path=fig_dir / "ddpm_evolution.png",
+        title="DDPM Reverse Diffusion Process"
+    )
+    print(f"[OK] Evolution saved: {fig_dir}/ddpm_evolution.png")
 
     print("\n" + "=" * 60)
     print("[OK] Training Complete!")

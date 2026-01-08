@@ -500,6 +500,106 @@ def plot_training_curves(
     return fig
 
 
+def plot_ddpm_evolution(
+    model,
+    bounds: Tuple[float, float] = (-4, 4),
+    timesteps: List[int] = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 0],
+    n_samples: int = 10000,
+    eta: float = 0.0,
+    device: str = "cuda",
+    beta_schedule: str = "cosine",
+    save_path: Optional[str] = None,
+    title: str = "DDPM Diffusion Process (Reverse)",
+) -> plt.Figure:
+    """
+    Visualize the DDPM reverse diffusion process (similar to Flow Matching Figure 1).
+
+    Shows particle distribution evolving from pure noise (t=1000) to data (t=0).
+    This is directly analogous to plot_flow_evolution() but for DDPM.
+
+    Args:
+        model: Trained DDPM model
+        bounds: (min, max) bounds for the plot
+        timesteps: List of timesteps to visualize (1000 -> 0)
+        n_samples: Number of particles
+        eta: DDIM stochasticity (0=deterministic, 1=stochastic DDPM)
+        device: torch device
+        beta_schedule: Beta schedule used during training ("linear" or "cosine")
+        save_path: If provided, save figure to this path
+        title: Figure title
+
+    Returns:
+        fig: matplotlib Figure object
+    """
+    from src.ddpm_solver import ddim_sample_trajectory
+
+    # Sample initial noise and get reverse trajectory
+    x0 = torch.randn(n_samples, 2, device=device)
+
+    # Get full reverse trajectory with DDIM
+    with torch.no_grad():
+        # trajectory shape: (num_timesteps+1, n_samples, 2)
+        # From t=1000 to t=0
+        trajectory = ddim_sample_trajectory(
+            model,
+            x0=x0,
+            num_steps=len(timesteps) - 1,  # Number of DDIM steps
+            eta=eta,
+            device=device,
+            schedule=beta_schedule
+        )
+
+    # Setup figure
+    fig, axes = plt.subplots(1, len(timesteps), figsize=(4 * len(timesteps), 4))
+    if len(timesteps) == 1:
+        axes = [axes]
+
+    # Map timesteps to trajectory indices
+    # timesteps like [1000, 750, 500, 250, 100, 0]
+    # trajectory indices: [0, len//5, 2*len//5, 3*len//5, 4*len//5, len]
+    num_ddim_steps = len(timesteps) - 1
+
+    for ax, t in zip(axes, timesteps):
+        # Map timestep to trajectory index
+        if t == 1000:
+            idx = 0
+        elif t == 0:
+            idx = num_ddim_steps
+        else:
+            # Linear interpolation for intermediate timesteps
+            fraction = (1000 - t) / 1000  # 0 at t=1000, 1 at t=0
+            idx = int(round(fraction * num_ddim_steps))
+            idx = min(max(idx, 0), num_ddim_steps)
+
+        samples = trajectory[idx].detach().cpu().numpy()
+
+        # Scatter plot
+        ax.scatter(
+            samples[:, 0],
+            samples[:, 1],
+            s=1,
+            c='blue',
+            alpha=0.3,
+            rasterized=True
+        )
+
+        ax.set_title(f"t={t}")
+        ax.set_xlim(bounds)
+        ax.set_ylim(bounds)
+        ax.set_aspect("equal")
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    plt.suptitle(title, fontsize=16, y=1.05)
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"[OK] DDPM evolution saved to {save_path}")
+
+    return fig
+
+
 def plot_cifar_metrics(
     train_losses: List[float],
     nll_values: List[Tuple[int, float]] = [],
@@ -629,7 +729,7 @@ def save_samples(
         normalize=normalize,
         value_range=value_range,
     )
-    print(f"✅ Samples saved to {save_path}")
+    print(f"[OK] Samples saved to {save_path}")
 
 
 def create_report_figures(

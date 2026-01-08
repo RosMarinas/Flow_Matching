@@ -130,7 +130,7 @@ class DDPM(nn.Module):
 
         # 1. Sample random timestep t ~ Uniform{1, ..., T}
         # Note: t=0 is reserved for the data distribution
-        t = torch.randint(1, self.num_timesteps, (batch_size,), device=device)
+        t = torch.randint(0, self.num_timesteps, (batch_size,), device=device)
 
         # 2. Sample noise ε ~ N(0, I)
         epsilon = torch.randn_like(x1)
