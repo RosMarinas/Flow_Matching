@@ -22,7 +22,7 @@ data/
 
 # Training results and logs
 Flow_Matching/results/
-results/
+
 
 # Model checkpoints (Large files)
 *.pth
@@ -35,3 +35,4 @@ results/
 
 # Agent / Temporary
 .gemini/
+
