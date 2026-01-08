@@ -1,6 +1,8 @@
 """
-Test script to verify CIFAR-10 DDPM sampling with cosine beta schedule.
-This will use the trained model from results/cifar10/DDPM to generate samples.
+CIFAR-10 DDPM Sampling Script
+
+This script uses the trained DDPM model to generate samples with different NFE values
+using DDIM sampling for variable computational cost.
 """
 
 import sys
@@ -17,7 +19,7 @@ from src.visualize import save_samples
 
 def main():
     print("=" * 60)
-    print("Testing CIFAR-10 DDPM Sampling with Cosine Schedule")
+    print("CIFAR-10 DDPM Sampling with Cosine Schedule")
     print("=" * 60)
 
     # Configuration - MUST match training config!
